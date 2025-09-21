@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{{ page_title }} · {{ site.title }}</title>
+<meta name="description" content="{{ site.description }}" />
+<link rel="icon" href="/assets/img/favicon.png" />
+<link rel="stylesheet" href="/assets/css/tokens.css" />
+<link rel="stylesheet" href="/assets/css/base.css" />
+<link rel="stylesheet" href="/assets/css/components.css" />
+</head>
+<body>
+<a class="skip-link" href="#content">Skip to content</a>
+<header class="site-header">
+<div class="container nav">
+<a class="brand" href="/index.html">{{ site.title }}</a>
+<button class="nav-toggle" aria-controls="primary-nav" aria-expanded="false" onclick="toggleNav()">Menu</button>
+<nav id="primary-nav" class="primary-nav" aria-label="Primary">
+<ul>
+{% for item in site.nav %}
+<li><a href="{{ item.href }}">{{ item.label }}</a></li>
+{% endfor %}
+</ul>
+</nav>
+</div>
+</header>
+<main id="content" class="container">
+{% block content %}{% endblock %}
+</main>
+<footer class="site-footer">
+<div class="container">
+<p>© {{ now().year if now else '' }} {{ site.title }} · Built with Python + Jinja · <a href="/contact.html">Contact</a></p>
+</div>
+</footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>
