@@ -99,7 +99,7 @@
       align-items: center;
       padding: 22px 32px 0;
     }
-    .head-left { justify-self: start; display: none; align-items: center; gap: 10px; }
+    .head-left { grid-column: 1; justify-self: start; display: none; align-items: center; gap: 10px; }
     .head-left svg { width: 20px; color: var(--moss); opacity: 0.8; }
     .head-title {
       font-family: var(--font-display);
@@ -107,7 +107,7 @@
       color: var(--moss);
       letter-spacing: 0.02em;
     }
-    .head-center { justify-self: center; text-align: center; }
+    .head-center { grid-column: 2; justify-self: center; text-align: center; }
     .head-counter {
       font-family: var(--font-body);
       font-size: 12px;
@@ -130,6 +130,7 @@
       transition: width 250ms ease;
     }
     .exit-button {
+      grid-column: 3;
       justify-self: end;
       background: transparent;
       border: none;
@@ -518,6 +519,16 @@
         <div class="field-wrap">
           <input type="text" id="f-name" placeholder="Your name" autocomplete="off" />
         </div>
+        <div class="spotify-wrapper">
+          <iframe
+            title="Spotify player"
+            src="https://open.spotify.com/embed/playlist/6DV2CJnoLXopwnX4M7xDrB?utm_source=generator"
+            width="100%"
+            height="152"
+            frameborder="0"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"></iframe>
+        </div>
         <div class="save-note">Saved</div>
         <p class="field-hint"></p>
         <div class="question-nav">
@@ -553,8 +564,7 @@
     <!-- Q3 -->
     <section class="screen" data-screen="q3">
       <div class="screen-inner">
-        <h2 class="question-title">OR, if you've forgotten... what's your favorite memory of us?</h2>
-        <span class="optional-note">Optional</span>
+        <h2 class="question-title">What's your favorite memory of us?</h2>
         <div class="field-wrap">
           <textarea id="f-favoriteMemory" placeholder="A moment that comes to mind..."></textarea>
         </div>
@@ -579,16 +589,6 @@
             <path d="M14 21 q -8 -3 -12 1" />
             <path d="M19 14 q 8 -4 11 -1" />
           </svg>
-        </div>
-        <div class="spotify-wrapper">
-          <iframe
-            title="Spotify player"
-            src="https://open.spotify.com/embed/playlist/6DV2CJnoLXopwnX4M7xDrB?utm_source=generator"
-            width="100%"
-            height="152"
-            frameborder="0"
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-            loading="lazy"></iframe>
         </div>
         <div class="save-note">Saved</div>
         <p class="field-hint"></p>
@@ -647,7 +647,7 @@
     const FIELDS = [
       { key: "name", required: true },
       { key: "meetingStory", required: true },
-      { key: "favoriteMemory", required: false },
+      { key: "favoriteMemory", required: true },
       { key: "cultureRecommendation", required: true },
       { key: "improvedSelf", required: true },
     ];
