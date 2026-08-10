@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A few questions</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      --bg: #F4EFE4;
+      --bg-warm: #EDE5D6;
+      --surface: #F8F3E9;
+      --surface-soft: #F1EBDD;
+
+      --forest-deep: #293526;
+      --forest: #384A32;
+      --moss: #536548;
+      --sage: #87917A;
+      --lichen: #B9BEAA;
+
+      --bark: #6B5D50;
+      --stone: #817A70;
+      --stone-soft: #AAA397;
+
+      --border: #AEB39D;
+      --border-soft: #D5D0C3;
+
+      --accent-muted: #9B8F62;
+
+      --font-display: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
+      --font-body: "Inter", "Avenir Next", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { margin: 0; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--forest-deep);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.6;
+      min-height: 100dvh;
+    }
+
+    /* barely-there paper grain */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.5;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.05'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 240px;
+      background-repeat: repeat;
+    }
+
+    /* ---------- page-edge flora ---------- */
+    .flora {
+      position: fixed;
+      z-index: 0;
+      pointer-events: none;
+      color: var(--sage);
+    }
+    .flora-fern {
+      top: -12px;
+      left: -8px;
+      width: 150px;
+      opacity: 0.45;
+    }
+    .flora-stem {
+      bottom: -6px;
+      right: 14px;
+      width: 90px;
+      opacity: 0.5;
+      color: var(--stone-soft);
+    }
+    .flora-mushroom {
+      bottom: 42px;
+      left: 18px;
+      width: 34px;
+      opacity: 0.45;
+      color: var(--bark);
+    }
+
+    /* ---------- header ---------- */
+    header {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      padding: 22px 32px 0;
+    }
+    .head-left { justify-self: start; display: none; align-items: center; gap: 10px; }
+    .head-left svg { width: 20px; color: var(--moss); opacity: 0.8; }
+    .head-title {
+      font-family: var(--font-display);
+      font-size: 17px;
+      color: var(--moss);
+      letter-spacing: 0.02em;
+    }
+    .head-center { justify-self: center; text-align: center; }
+    .head-counter {
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      color: var(--stone);
+      font-variant-numeric: tabular-nums;
+    }
+    .progress-track {
+      width: 320px;
+      max-width: 40vw;
+      height: 2px;
+      background: var(--border-soft);
+      margin: 10px auto 0;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--moss);
+      transition: width 250ms ease;
+    }
+    .exit-button {
+      justify-self: end;
+      background: transparent;
+      border: none;
+      padding: 6px 2px;
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--stone);
+      cursor: pointer;
+      letter-spacing: 0.02em;
+    }
+    .exit-button:hover { color: var(--forest); }
+
+    /* segmented progress, mobile only */
+    .progress-segments {
+      display: none;
+      gap: 6px;
+      padding: 14px 24px 0;
+      position: relative;
+      z-index: 2;
+    }
+    .progress-segments span {
+      flex: 1;
+      height: 3px;
+      border-radius: 3px;
+      background: var(--border-soft);
+    }
+    .progress-segments span.filled { background: var(--moss); }
+
+    body[data-screen="welcome"] .head-center,
+    body[data-screen="done"] .head-center,
+    body[data-screen="welcome"] .progress-segments,
+    body[data-screen="done"] .progress-segments,
+    body[data-screen="done"] .exit-button { visibility: hidden; }
+
+    /* ---------- layout ---------- */
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 48px 32px 56px;
+      min-height: calc(100dvh - 60px);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .screen {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .screen.active { display: flex; }
+    .screen.active .screen-inner { animation: screenIn 220ms ease both; }
+    @keyframes screenIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .screen-inner {
+      width: 100%;
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    /* ---------- welcome ---------- */
+    .welcome { text-align: center; }
+    .welcome-flora { width: 74px; color: var(--sage); opacity: 0.75; margin: 0 auto 26px; display: block; }
+    .welcome h1 {
+      font-family: var(--font-display);
+      font-weight: 400;
+      font-size: clamp(42px, 4.6vw, 62px);
+      line-height: 1.1;
+      margin: 0 0 18px;
+      color: var(--forest-deep);
+    }
+    .welcome-sub {
+      color: var(--stone);
+      font-size: 16px;
+      margin: 0 0 34px;
+    }
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      justify-content: center;
+      margin: 0 auto 30px;
+      max-width: 420px;
+      color: var(--stone-soft);
+    }
+    .divider::before,
+    .divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--border-soft);
+    }
+    .divider svg { width: 40px; flex-shrink: 0; opacity: 0.85; }
+    .welcome-count {
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--sage);
+      margin: 0 0 36px;
+    }
+
+    /* ---------- buttons ---------- */
+    .primary-button {
+      background: var(--forest);
+      color: var(--bg);
+      border-radius: 10px;
+      padding: 16px 30px;
+      border: none;
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      transition: background 150ms ease;
+    }
+    .primary-button:hover { background: var(--moss); }
+    .primary-button:disabled { opacity: 0.55; cursor: default; }
+    .back-button {
+      background: transparent;
+      border: none;
+      color: var(--moss);
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 500;
+      padding: 12px 4px;
+      cursor: pointer;
+    }
+    .back-button:hover { color: var(--forest-deep); }
+
+    /* ---------- questions ---------- */
+    .question-title {
+      font-family: var(--font-display);
+      font-size: clamp(44px, 5vw, 68px);
+      line-height: 1.05;
+      font-weight: 400;
+      color: var(--forest-deep);
+      margin: 0 0 34px;
+      text-align: center;
+    }
+    .optional-note {
+      display: block;
+      text-align: right;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--stone-soft);
+      margin: -20px 2px 10px;
+    }
+
+    .field-wrap { position: relative; margin-bottom: 24px; }
+    .field-wrap textarea,
+    .field-wrap input[type="text"] { margin-bottom: 0; display: block; }
+    .field-sprig {
+      position: absolute;
+      bottom: 14px;
+      right: 44px;
+      width: 28px;
+      color: var(--lichen);
+      pointer-events: none;
+    }
+
+    textarea,
+    input[type="text"] {
+      width: 100%;
+      background: rgba(248, 243, 233, 0.75);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-family: var(--font-body);
+      font-size: 17px;
+      line-height: 1.6;
+      color: var(--forest-deep);
+    }
+    textarea {
+      min-height: 220px;
+      resize: vertical;
+      padding: 28px 30px;
+      margin-bottom: 24px;
+    }
+    input[type="text"] {
+      padding: 20px 24px;
+      margin-bottom: 24px;
+    }
+    textarea::placeholder,
+    input[type="text"]::placeholder {
+      color: var(--stone);
+      opacity: 0.75;
+    }
+    textarea:focus,
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--moss);
+      box-shadow: 0 0 0 2px rgba(83, 101, 72, 0.08);
+    }
+
+    .spotify-wrapper {
+      background: var(--surface-soft);
+      border: 1px solid var(--border-soft);
+      border-radius: 14px;
+      overflow: hidden;
+      line-height: 0;
+      margin-bottom: 32px;
+    }
+
+    .question-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 12px;
+    }
+    .field-hint {
+      font-size: 13px;
+      color: var(--bark);
+      min-height: 20px;
+      margin: 0 0 4px;
+    }
+    .save-note {
+      font-size: 12px;
+      color: var(--stone-soft);
+      text-align: right;
+      min-height: 18px;
+      opacity: 0;
+      transition: opacity 300ms ease;
+      margin: -16px 2px 6px;
+    }
+    .save-note.visible { opacity: 1; }
+    .kbd-note {
+      text-align: center;
+      font-size: 12px;
+      color: var(--stone-soft);
+      margin-top: 26px;
+    }
+    .kbd-note kbd {
+      font-family: var(--font-body);
+      border: 1px solid var(--border-soft);
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-size: 11px;
+    }
+
+    /* ---------- done ---------- */
+    .done { text-align: center; }
+    .done-flora { width: 56px; color: var(--sage); opacity: 0.8; margin: 0 auto 24px; display: block; }
+    .done h2 {
+      font-family: var(--font-display);
+      font-weight: 400;
+      font-size: clamp(38px, 4vw, 54px);
+      margin: 0 0 14px;
+    }
+    .done p { color: var(--stone); margin: 0; }
+
+    /* ---------- mobile ---------- */
+    @media (max-width: 768px) {
+      main { padding: 24px; }
+      header { padding: 16px 20px 0; }
+      .head-left { display: flex; }
+      .head-center .progress-track { display: none; }
+      .exit-button { display: none; }
+      .progress-segments { display: flex; }
+      body[data-screen="welcome"] .head-left,
+      body[data-screen="done"] .head-left { visibility: hidden; }
+
+      .question-title {
+        font-size: 40px;
+        line-height: 1.08;
+        text-align: left;
+      }
+      .screen { justify-content: flex-start; }
+      .screen-inner { margin-top: 34px; }
+      .welcome { text-align: center; }
+      .welcome .screen-inner { margin-top: 10vh; }
+      textarea { min-height: 300px; }
+      .primary-button { padding: 16px 26px; }
+      .kbd-note { display: none; }
+      .flora-fern { width: 110px; opacity: 0.35; }
+      .flora-mushroom { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+
+    .hp-field { position: absolute; left: -9999px; }
+  </style>
+</head>
+<body data-screen="welcome">
+
+  <!-- page-edge flora -->
+  <svg class="flora flora-fern" viewBox="0 0 120 200" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.3">
+    <path d="M16 196 C 28 150, 42 96, 74 18" />
+    <path d="M22 172 q -12 -2 -20 6" /><path d="M22 172 q 12 -12 24 -10" />
+    <path d="M28 148 q -13 -3 -22 4" /><path d="M28 148 q 13 -12 26 -11" />
+    <path d="M35 124 q -13 -4 -23 3" /><path d="M35 124 q 14 -12 27 -12" />
+    <path d="M42 101 q -12 -5 -22 1" /><path d="M42 101 q 14 -12 26 -13" />
+    <path d="M50 79 q -12 -5 -21 0" /><path d="M50 79 q 13 -12 24 -13" />
+    <path d="M58 58 q -11 -5 -19 -1" /><path d="M58 58 q 12 -11 22 -13" />
+    <path d="M65 40 q -9 -5 -16 -2" /><path d="M65 40 q 10 -10 18 -12" />
+    <path d="M71 26 q -7 -4 -13 -2" /><path d="M71 26 q 8 -8 14 -10" />
+  </svg>
+
+  <svg class="flora flora-stem" viewBox="0 0 100 180" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.2">
+    <path d="M54 178 C 50 140, 56 100, 50 30" />
+    <path d="M52 120 q -16 -8 -26 -2" />
+    <circle cx="24" cy="116" r="3.2" />
+    <path d="M53 88 q 15 -9 24 -4" />
+    <circle cx="79" cy="82" r="3.2" />
+    <path d="M51 56 q -13 -8 -21 -4" />
+    <circle cx="28" cy="50" r="3" />
+    <circle cx="50" cy="24" r="4" />
+    <circle cx="43" cy="16" r="2.6" />
+    <circle cx="57" cy="14" r="2.6" />
+  </svg>
+
+  <svg class="flora flora-mushroom" viewBox="0 0 40 44" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.2">
+    <path d="M6 22 C 6 10, 34 10, 34 22 Z" />
+    <path d="M16 22 C 15 32, 15 36, 17 42" />
+    <path d="M24 22 C 25 32, 25 36, 23 42" />
+    <path d="M13 17 h 0.1" /><path d="M20 14.5 h 0.1" /><path d="M27 17 h 0.1" />
+  </svg>
+
+  <header>
+    <div class="head-left" aria-hidden="true">
+      <svg viewBox="0 0 24 30" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round">
+        <path d="M12 28 C 12 20, 12 12, 12 6" />
+        <path d="M12 6 C 4 8, 3 18, 12 22 C 21 18, 20 8, 12 6 Z" />
+      </svg>
+      <span class="head-title">A few questions</span>
+    </div>
+    <div class="head-center">
+      <div class="head-counter" id="counter">01 / 05</div>
+      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    </div>
+    <button class="exit-button" id="exit-btn" type="button">Exit</button>
+  </header>
+
+  <div class="progress-segments" id="segments" aria-hidden="true">
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
+
+  <main>
+
+    <!-- Welcome -->
+    <section class="screen welcome active" data-screen="welcome">
+      <div class="screen-inner">
+        <svg class="welcome-flora" viewBox="0 0 80 90" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.2">
+          <path d="M40 88 C 40 66, 40 46, 40 26" />
+          <path d="M40 52 q -14 -8 -18 -20" />
+          <path d="M40 62 q 14 -8 18 -20" />
+          <path d="M40 26 C 33 24, 30 15, 34 9 C 38 4, 42 4, 46 9 C 50 15, 47 24, 40 26 Z" />
+          <path d="M40 26 q -9 -1 -13 -8" />
+          <path d="M40 26 q 9 -1 13 -8" />
+        </svg>
+        <h1>Thank you for taking the time to fill this out!</h1>
+        <p class="welcome-sub">This should take less than 15 minutes :)</p>
+        <div class="divider" aria-hidden="true">
+          <svg viewBox="0 0 48 30" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round">
+            <path d="M24 9 L 24 24" />
+            <path d="M24 12 C 14 2, 4 8, 9 16 C 12 21, 20 19, 24 15" />
+            <path d="M24 12 C 34 2, 44 8, 39 16 C 36 21, 28 19, 24 15" />
+            <path d="M24 17 C 18 22, 14 26, 17 27 C 20 28, 23 23, 24 19" />
+            <path d="M24 17 C 30 22, 34 26, 31 27 C 28 28, 25 23, 24 19" />
+            <path d="M24 9 q -3 -5 -7 -5" />
+            <path d="M24 9 q 3 -5 7 -5" />
+          </svg>
+        </div>
+        <p class="welcome-count">5 questions</p>
+        <button class="primary-button" id="begin-btn" type="button">Begin &rarr;</button>
+      </div>
+    </section>
+
+    <!-- Q1 -->
+    <section class="screen" data-screen="q1">
+      <div class="screen-inner">
+        <h2 class="question-title">What's your name?</h2>
+        <div class="field-wrap">
+          <input type="text" id="f-name" placeholder="Your name" autocomplete="off" />
+        </div>
+        <div class="save-note">Saved</div>
+        <p class="field-hint"></p>
+        <div class="question-nav">
+          <button class="back-button" type="button">&larr; Back</button>
+          <button class="primary-button next-button" type="button">Continue &rarr;</button>
+        </div>
+        <p class="kbd-note"><kbd>&#8984;</kbd> + <kbd>Enter</kbd> to continue</p>
+      </div>
+    </section>
+
+    <!-- Q2 -->
+    <section class="screen" data-screen="q2">
+      <div class="screen-inner">
+        <h2 class="question-title">How did we meet?</h2>
+        <div class="field-wrap">
+          <textarea id="f-meetingStory" placeholder="Where/when did we meet? Best approximation is totally fine."></textarea>
+          <svg class="field-sprig" viewBox="0 0 32 34" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+            <path d="M6 32 C 12 24, 18 16, 26 4" />
+            <path d="M14 21 q -8 -3 -12 1" />
+            <path d="M19 14 q 8 -4 11 -1" />
+          </svg>
+        </div>
+        <div class="save-note">Saved</div>
+        <p class="field-hint"></p>
+        <div class="question-nav">
+          <button class="back-button" type="button">&larr; Back</button>
+          <button class="primary-button next-button" type="button">Continue &rarr;</button>
+        </div>
+        <p class="kbd-note"><kbd>&#8984;</kbd> + <kbd>Enter</kbd> to continue</p>
+      </div>
+    </section>
+
+    <!-- Q3 -->
+    <section class="screen" data-screen="q3">
+      <div class="screen-inner">
+        <h2 class="question-title">OR, if you've forgotten... what's your favorite memory of us?</h2>
+        <span class="optional-note">Optional</span>
+        <div class="field-wrap">
+          <textarea id="f-favoriteMemory" placeholder="A moment that comes to mind..."></textarea>
+        </div>
+        <div class="save-note">Saved</div>
+        <p class="field-hint"></p>
+        <div class="question-nav">
+          <button class="back-button" type="button">&larr; Back</button>
+          <button class="primary-button next-button" type="button">Continue &rarr;</button>
+        </div>
+        <p class="kbd-note"><kbd>&#8984;</kbd> + <kbd>Enter</kbd> to continue</p>
+      </div>
+    </section>
+
+    <!-- Q4 -->
+    <section class="screen" data-screen="q4">
+      <div class="screen-inner">
+        <h2 class="question-title">What's a culture rec that you have for me?</h2>
+        <div class="field-wrap">
+          <textarea id="f-cultureRecommendation" placeholder="Something you think I'd love.&#10;&#10;A song, album, hike, place, hobby, book, movie, anything."></textarea>
+          <svg class="field-sprig" viewBox="0 0 32 34" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+            <path d="M6 32 C 12 24, 18 16, 26 4" />
+            <path d="M14 21 q -8 -3 -12 1" />
+            <path d="M19 14 q 8 -4 11 -1" />
+          </svg>
+        </div>
+        <div class="spotify-wrapper">
+          <iframe
+            title="Spotify player"
+            src="https://open.spotify.com/embed/playlist/6DV2CJnoLXopwnX4M7xDrB?utm_source=generator"
+            width="100%"
+            height="152"
+            frameborder="0"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"></iframe>
+        </div>
+        <div class="save-note">Saved</div>
+        <p class="field-hint"></p>
+        <div class="question-nav">
+          <button class="back-button" type="button">&larr; Back</button>
+          <button class="primary-button next-button" type="button">Continue &rarr;</button>
+        </div>
+        <p class="kbd-note"><kbd>&#8984;</kbd> + <kbd>Enter</kbd> to continue</p>
+      </div>
+    </section>
+
+    <!-- Q5 -->
+    <section class="screen" data-screen="q5">
+      <div class="screen-inner">
+        <h2 class="question-title">In my most frontal-lobe-developed form, what would I be like?</h2>
+        <div class="field-wrap">
+          <textarea id="f-improvedSelf" placeholder="What does the most improved version of me look like? Be specific. What changes? What stays the same?"></textarea>
+        </div>
+        <div class="save-note">Saved</div>
+        <p class="field-hint"></p>
+        <div class="question-nav">
+          <button class="back-button" type="button">&larr; Back</button>
+          <button class="primary-button next-button" type="button">Submit &rarr;</button>
+        </div>
+        <p class="kbd-note"><kbd>&#8984;</kbd> + <kbd>Enter</kbd> to submit</p>
+      </div>
+    </section>
+
+    <!-- Done -->
+    <section class="screen done" data-screen="done">
+      <div class="screen-inner">
+        <svg class="done-flora" viewBox="0 0 80 90" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.2">
+          <path d="M40 88 C 40 66, 40 46, 40 26" />
+          <path d="M40 52 q -14 -8 -18 -20" />
+          <path d="M40 62 q 14 -8 18 -20" />
+          <path d="M40 26 C 33 24, 30 15, 34 9 C 38 4, 42 4, 46 9 C 50 15, 47 24, 40 26 Z" />
+        </svg>
+        <h2>Tucked away safely.</h2>
+        <p>Your answers are in. Thank you for the time and the words.</p>
+      </div>
+    </section>
+
+    <!-- honeypot spam trap: real users never see or fill this -->
+    <div class="hp-field" aria-hidden="true">
+      <label for="website">Website</label>
+      <input type="text" id="website" tabindex="-1" autocomplete="off" />
+    </div>
+
+  </main>
+
+  <script>
+    // ---- backend endpoint (Google Apps Script web app) ----
+    const ENDPOINT = "https://script.google.com/macros/s/AKfycbwfCwO0bnGxGxyXzOC33TxRbjzDFqNDQnwaTR24uJIGIhAFJfp9fLlUzKDG8ra8pCX2bQ/exec";
+
+    const STORAGE_KEY = "questionnaireAnswers";
+    const FIELDS = [
+      { key: "name", required: true },
+      { key: "meetingStory", required: true },
+      { key: "favoriteMemory", required: false },
+      { key: "cultureRecommendation", required: true },
+      { key: "improvedSelf", required: true },
+    ];
+    const SCREENS = ["welcome", "q1", "q2", "q3", "q4", "q5", "done"];
+
+    let answers = { name: "", meetingStory: "", favoriteMemory: "", cultureRecommendation: "", improvedSelf: "" };
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (saved && typeof saved === "object") answers = { ...answers, ...saved };
+    } catch (e) { /* fresh start */ }
+
+    // restore saved answers into fields
+    FIELDS.forEach(({ key }) => {
+      const el = document.getElementById("f-" + key);
+      if (el) el.value = answers[key] || "";
+    });
+
+    let current = "welcome";
+    let submitting = false;
+
+    const counterEl = document.getElementById("counter");
+    const fillEl = document.getElementById("progress-fill");
+    const segments = document.querySelectorAll("#segments span");
+
+    function screenEl(name) {
+      return document.querySelector('.screen[data-screen="' + name + '"]');
+    }
+
+    function show(name) {
+      screenEl(current).classList.remove("active");
+      current = name;
+      const el = screenEl(name);
+      el.classList.add("active");
+      document.body.dataset.screen = name;
+
+      const qIndex = ["q1", "q2", "q3", "q4", "q5"].indexOf(name);
+      if (qIndex >= 0) {
+        counterEl.textContent = "0" + (qIndex + 1) + " / 05";
+        fillEl.style.width = ((qIndex + 1) / 5) * 100 + "%";
+        segments.forEach((s, i) => s.classList.toggle("filled", i <= qIndex));
+        const field = document.getElementById("f-" + FIELDS[qIndex].key);
+        if (field && window.matchMedia("(min-width: 769px)").matches) field.focus();
+      }
+      window.scrollTo(0, 0);
+    }
+
+    // ---- autosave ----
+    let saveTimer = null;
+    let noteTimer = null;
+    FIELDS.forEach(({ key }) => {
+      const el = document.getElementById("f-" + key);
+      el.addEventListener("input", () => {
+        answers[key] = el.value;
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(() => {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(answers));
+          const note = el.closest(".screen-inner").querySelector(".save-note");
+          note.classList.add("visible");
+          clearTimeout(noteTimer);
+          noteTimer = setTimeout(() => note.classList.remove("visible"), 1500);
+        }, 500);
+      });
+    });
+
+    // ---- navigation ----
+    function hintEl(name) {
+      return screenEl(name).querySelector(".field-hint");
+    }
+
+    function advance() {
+      if (current === "welcome") { show("q1"); return; }
+      const qIndex = ["q1", "q2", "q3", "q4", "q5"].indexOf(current);
+      if (qIndex < 0) return;
+
+      const { key, required } = FIELDS[qIndex];
+      const value = (answers[key] || "").trim();
+      if (required && !value) {
+        hintEl(current).textContent = "This one is required.";
+        document.getElementById("f-" + key).focus();
+        return;
+      }
+      hintEl(current).textContent = "";
+
+      if (current === "q5") { submit(); return; }
+      show(SCREENS[SCREENS.indexOf(current) + 1]);
+    }
+
+    function goBack() {
+      const i = SCREENS.indexOf(current);
+      if (i > 0) show(SCREENS[i - 1]);
+    }
+
+    document.querySelectorAll(".next-button").forEach((b) => b.addEventListener("click", advance));
+    document.querySelectorAll(".back-button").forEach((b) => b.addEventListener("click", goBack));
+    document.getElementById("begin-btn").addEventListener("click", () => show("q1"));
+    document.getElementById("exit-btn").addEventListener("click", () => {
+      if (current === "welcome") { history.back(); return; }
+      show("welcome");
+    });
+
+    // Enter advances on the single-line name field
+    document.getElementById("f-name").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); advance(); }
+    });
+
+    // Cmd/Ctrl + Enter advances everywhere
+    document.addEventListener("keydown", (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        e.preventDefault();
+        advance();
+      }
+    });
+
+    // ---- submit ----
+    async function submit() {
+      if (submitting) return;
+      if (document.getElementById("website").value) return; // honeypot
+
+      const btn = screenEl("q5").querySelector(".next-button");
+      const hint = hintEl("q5");
+      submitting = true;
+      btn.disabled = true;
+      btn.textContent = "Sending...";
+      hint.textContent = "";
+
+      const payload = {
+        q1: answers.name.trim(),
+        q2: answers.meetingStory.trim(),
+        q3: (answers.favoriteMemory || "").trim(),
+        q4: answers.cultureRecommendation.trim(),
+        q5: answers.improvedSelf.trim(),
+      };
+
+      try {
+        // text/plain body keeps this a "simple" CORS request (no preflight),
+        // which is required for Apps Script web apps
+        const res = await fetch(ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (data.status !== "ok") throw new Error(data.message || "Unexpected response");
+
+        localStorage.removeItem(STORAGE_KEY);
+        show("done");
+      } catch (err) {
+        hint.textContent = "Something went wrong sending your answers. Please try again.";
+        btn.disabled = false;
+        btn.textContent = "Submit →";
+      } finally {
+        submitting = false;
+      }
+    }
+  </script>
+</body>
+</html>
