@@ -381,7 +381,16 @@
 
     /* ---------- done ---------- */
     .done { text-align: center; }
-    .done-flora { width: 56px; color: var(--sage); opacity: 0.8; margin: 0 auto 24px; display: block; }
+    .done-flora-row {
+      display: flex;
+      justify-content: center;
+      gap: 26px;
+      margin: 0 auto 24px;
+      color: var(--sage);
+      opacity: 0.8;
+    }
+    .done-flora { width: 56px; }
+    .done-flora.mirrored { transform: scaleX(-1); }
     .done h2 {
       font-family: var(--font-display);
       font-weight: 400;
@@ -620,13 +629,21 @@
     <!-- Done -->
     <section class="screen done" data-screen="done">
       <div class="screen-inner">
-        <svg class="done-flora" viewBox="0 0 80 90" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.2">
-          <path d="M40 88 C 40 66, 40 46, 40 26" />
-          <path d="M40 52 q -14 -8 -18 -20" />
-          <path d="M40 62 q 14 -8 18 -20" />
-          <path d="M40 26 C 33 24, 30 15, 34 9 C 38 4, 42 4, 46 9 C 50 15, 47 24, 40 26 Z" />
-        </svg>
-        <h2>Tucked away safely.</h2>
+        <div class="done-flora-row" aria-hidden="true">
+          <svg class="done-flora" viewBox="0 0 80 90" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.2">
+            <path d="M40 88 C 40 66, 40 46, 40 26" />
+            <path d="M40 52 q -14 -8 -18 -20" />
+            <path d="M40 62 q 14 -8 18 -20" />
+            <path d="M40 26 C 33 24, 30 15, 34 9 C 38 4, 42 4, 46 9 C 50 15, 47 24, 40 26 Z" />
+          </svg>
+          <svg class="done-flora mirrored" viewBox="0 0 80 90" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.2">
+            <path d="M40 88 C 40 66, 40 46, 40 26" />
+            <path d="M40 52 q -14 -8 -18 -20" />
+            <path d="M40 62 q 14 -8 18 -20" />
+            <path d="M40 26 C 33 24, 30 15, 34 9 C 38 4, 42 4, 46 9 C 50 15, 47 24, 40 26 Z" />
+          </svg>
+        </div>
+        <h2>Grateful for you!</h2>
         <p>Your answers are in. Thank you for the time and the words.</p>
       </div>
     </section>
