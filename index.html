@@ -203,8 +203,8 @@
     .welcome h1 {
       font-family: var(--font-display);
       font-weight: 400;
-      font-size: clamp(42px, 4.6vw, 62px);
-      line-height: 1.1;
+      font-size: clamp(34px, 4vw, 54px);
+      line-height: 1.12;
       margin: 0 0 18px;
       color: var(--forest-deep);
     }
@@ -213,6 +213,7 @@
       font-size: 16px;
       margin: 0 0 34px;
     }
+    .welcome-sub-lead { margin-bottom: 10px; }
     .divider {
       display: flex;
       align-items: center;
@@ -418,7 +419,8 @@
       .screen { justify-content: flex-start; }
       .screen-inner { margin-top: 34px; }
       .welcome { text-align: center; }
-      .welcome .screen-inner { margin-top: 10vh; }
+      .welcome .screen-inner { margin-top: 6vh; }
+      .welcome h1 { font-size: 30px; }
       textarea { min-height: 300px; }
       .primary-button { padding: 16px 26px; }
       .kbd-note { display: none; }
@@ -503,7 +505,8 @@
           <path d="M40 26 q -9 -1 -13 -8" />
           <path d="M40 26 q 9 -1 13 -8" />
         </svg>
-        <h1>Thank you for taking the time to fill this out!</h1>
+        <h1>Thank you for being a part of my last ~year of life~!</h1>
+        <p class="welcome-sub welcome-sub-lead">&amp; for taking the time to fill this out!</p>
         <p class="welcome-sub">This should take less than 15 minutes :)</p>
         <div class="divider" aria-hidden="true">
           <svg viewBox="0 0 48 30" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round">
@@ -529,14 +532,7 @@
           <input type="text" id="f-name" placeholder="Your name" autocomplete="off" />
         </div>
         <div class="spotify-wrapper">
-          <iframe
-            title="Spotify player"
-            src="https://open.spotify.com/embed/playlist/6DV2CJnoLXopwnX4M7xDrB?utm_source=generator"
-            width="100%"
-            height="152"
-            frameborder="0"
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-            loading="lazy"></iframe>
+          <div id="spotify-embed"></div>
         </div>
         <div class="save-note">Saved</div>
         <p class="field-hint"></p>
@@ -656,6 +652,27 @@
 
   </main>
 
+  <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
+  <script>
+    // ---- Spotify iframe API: lets the Begin click also start the music ----
+    const SPOTIFY_URI = "spotify:playlist:6DV2CJnoLXopwnX4M7xDrB";
+    let spotifyController = null;
+    let wantMusic = false;
+    window.onSpotifyIframeApiReady = (IFrameAPI) => {
+      IFrameAPI.createController(
+        document.getElementById("spotify-embed"),
+        { uri: SPOTIFY_URI, width: "100%", height: 152 },
+        (controller) => {
+          spotifyController = controller;
+          if (wantMusic) { try { controller.play(); } catch (e) {} }
+        }
+      );
+    };
+    function startMusic() {
+      wantMusic = true;
+      if (spotifyController) { try { spotifyController.play(); } catch (e) {} }
+    }
+  </script>
   <script>
     // ---- backend endpoint (Google Apps Script web app) ----
     const ENDPOINT = "https://script.google.com/macros/s/AKfycbwfCwO0bnGxGxyXzOC33TxRbjzDFqNDQnwaTR24uJIGIhAFJfp9fLlUzKDG8ra8pCX2bQ/exec";
@@ -759,7 +776,10 @@
 
     document.querySelectorAll(".next-button").forEach((b) => b.addEventListener("click", advance));
     document.querySelectorAll(".back-button").forEach((b) => b.addEventListener("click", goBack));
-    document.getElementById("begin-btn").addEventListener("click", () => show("q1"));
+    document.getElementById("begin-btn").addEventListener("click", () => {
+      startMusic();
+      show("q1");
+    });
     document.getElementById("exit-btn").addEventListener("click", () => {
       if (current === "welcome") { history.back(); return; }
       show("welcome");
