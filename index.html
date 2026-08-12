@@ -529,14 +529,7 @@
           <input type="text" id="f-name" placeholder="Your name" autocomplete="off" />
         </div>
         <div class="spotify-wrapper">
-          <iframe
-            title="Spotify player"
-            src="https://open.spotify.com/embed/playlist/6DV2CJnoLXopwnX4M7xDrB?utm_source=generator"
-            width="100%"
-            height="152"
-            frameborder="0"
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-            loading="lazy"></iframe>
+          <div id="spotify-embed"></div>
         </div>
         <div class="save-note">Saved</div>
         <p class="field-hint"></p>
@@ -656,6 +649,27 @@
 
   </main>
 
+  <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
+  <script>
+    // ---- Spotify iframe API: lets the Begin click also start the music ----
+    const SPOTIFY_URI = "spotify:playlist:6DV2CJnoLXopwnX4M7xDrB";
+    let spotifyController = null;
+    let wantMusic = false;
+    window.onSpotifyIframeApiReady = (IFrameAPI) => {
+      IFrameAPI.createController(
+        document.getElementById("spotify-embed"),
+        { uri: SPOTIFY_URI, width: "100%", height: 152 },
+        (controller) => {
+          spotifyController = controller;
+          if (wantMusic) { try { controller.play(); } catch (e) {} }
+        }
+      );
+    };
+    function startMusic() {
+      wantMusic = true;
+      if (spotifyController) { try { spotifyController.play(); } catch (e) {} }
+    }
+  </script>
   <script>
     // ---- backend endpoint (Google Apps Script web app) ----
     const ENDPOINT = "https://script.google.com/macros/s/AKfycbwfCwO0bnGxGxyXzOC33TxRbjzDFqNDQnwaTR24uJIGIhAFJfp9fLlUzKDG8ra8pCX2bQ/exec";
@@ -759,7 +773,10 @@
 
     document.querySelectorAll(".next-button").forEach((b) => b.addEventListener("click", advance));
     document.querySelectorAll(".back-button").forEach((b) => b.addEventListener("click", goBack));
-    document.getElementById("begin-btn").addEventListener("click", () => show("q1"));
+    document.getElementById("begin-btn").addEventListener("click", () => {
+      startMusic();
+      show("q1");
+    });
     document.getElementById("exit-btn").addEventListener("click", () => {
       if (current === "welcome") { history.back(); return; }
       show("welcome");
